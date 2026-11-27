@@ -47,6 +47,14 @@ constexpr std::tuple<int, int, bool, bool> tile_size_fwd_sm90(
             return {128, is_local ? 64 : 80, true, true};  // 128 x 80 hits the limit of smem
         }
     } else {
+        #ifndef FLASHATTENTION_DISABLE_FP8_TWO_LEVEL_ACCUMULATION
+        // FP8 two-level P @ V accumulation runs in the mainloop without intra-warpgroup overlap, which adds
+        // each P @ V chunk to O after its WGMMA completes (PvChunkedTwoLevel). With intra-WG overlap it
+        // would read O while the WGMMA is in flight, which serializes WGMMA (ptxas C7514) and spills.
+        constexpr bool Overlap = false;
+        #else
+        constexpr bool Overlap = true;
+        #endif
         if (headdim <= 64) {
             if (use_one_mma_wg) {
                 return {64, 128, true, true};
@@ -57,9 +65,9 @@ constexpr std::tuple<int, int, bool, bool> tile_size_fwd_sm90(
             return {192, 128, true, true};
         } else if (headdim <= 128) {
             if (use_one_mma_wg) {
-                return {64, 96, true, true};
+                return {64, 96, true, Overlap};
             } else {
-                return {128, paged_kv_non_TMA ? 160 : (v_colmajor || (softcap && is_local) ? 192 : 224), true, true};
+                return {128, paged_kv_non_TMA ? 160 : (v_colmajor || (softcap && is_local) ? 192 : 224), true, Overlap};
             }
         } else if (headdim <= 192) {
             return {128, (paged_kv_non_TMA || softcap) && is_local ? 128 : 160, true, true};
