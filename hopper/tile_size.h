@@ -70,7 +70,7 @@ constexpr std::tuple<int, int, bool, bool> tile_size_fwd_sm90(
                 return {128, paged_kv_non_TMA ? 160 : (v_colmajor || (softcap && is_local) ? 192 : 224), true, Overlap};
             }
         } else if (headdim <= 192) {
-            return {128, (paged_kv_non_TMA || softcap) && is_local ? 128 : 160, true, true};
+            return {128, (paged_kv_non_TMA || softcap) && is_local ? 128 : 160, true, Overlap};
         } else {
             return {128, is_local ? 64 : 128, true, !paged_kv_non_TMA};  // PagedKV uses more registers so we disabled IntraWGOverlap
         }
