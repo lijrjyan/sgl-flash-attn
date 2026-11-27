@@ -135,7 +135,7 @@ struct CollectiveMainloopFwdSm90 {
 #else
     static constexpr bool Fp8TwoLevelPV = false;
 #endif
-    static constexpr int kPvChunkN = 64;
+    static constexpr int kPvChunkN = kHeadDimV >= 128 ? 64 : 32;
     static constexpr int NumPvChunks = kHeadDimV / kPvChunkN;
     static constexpr bool PvChunkedTwoLevel = Fp8TwoLevelPV && MmaPV_is_RS && !IntraWGOverlap && !LargeHeadDimV
         && !HasQv && kHeadDimV % kPvChunkN == 0 && NumPvChunks >= 2;

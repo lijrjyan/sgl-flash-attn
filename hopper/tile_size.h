@@ -57,9 +57,9 @@ constexpr std::tuple<int, int, bool, bool> tile_size_fwd_sm90(
         #endif
         if (headdim <= 64) {
             if (use_one_mma_wg) {
-                return {64, 128, true, true};
+                return {64, 128, true, Overlap};
             } else {
-                return {192, 160, true, true};
+                return {192, 160, true, Overlap};
             }
         } else if (headdim <= 96) {
             return {192, 128, true, true};
